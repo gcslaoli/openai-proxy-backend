@@ -13,14 +13,25 @@ logger:
 
 
 database:
+  # default:
+  #   type: "sqlite" # 数据库类型
+  #   name: "./data/cool.sqlite" # 数据库名称,对于sqlite来说就是数据库文件名
+  #   extra: busy_timeout=5000 # 扩展参数 如 busy_timeout=5000&journal_mode=ALL
+  #   createdAt: "createTime" # 创建时间字段名称
+  #   updatedAt: "updateTime" # 更新时间字段名称
+  #   debug: true # 开启调试模式,启用后将在控制台打印相关sql语句
   default:
-    type: "sqlite" # 数据库类型
-    name: "./data/cool.sqlite" # 数据库名称,对于sqlite来说就是数据库文件名
-    extra: busy_timeout=5000 # 扩展参数 如 busy_timeout=5000&journal_mode=ALL
-    createdAt: "createTime" # 创建时间字段名称
-    updatedAt: "updateTime" # 更新时间字段名称
-    debug: true # 开启调试模式,启用后将在控制台打印相关sql语句
-
+    type: "mysql"
+    host: "127.0.0.1"
+    port: "3306"
+    user: "root"
+    pass: "123456"
+    name: "cool"
+    charset: "utf8mb4"
+    timezone: "Asia/Shanghai"
+    debug: true
+    createdAt: "createTime"
+    updatedAt: "updateTime"
 cool:
   autoMigrate: true
   eps: true

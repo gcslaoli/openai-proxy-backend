@@ -3,6 +3,7 @@ package main
 import (
 	_ "openai-proxy-backend/internal/packed"
 
+	_ "github.com/cool-team-official/cool-admin-go/contrib/drivers/mysql"
 	_ "github.com/cool-team-official/cool-admin-go/contrib/drivers/sqlite"
 
 	_ "openai-proxy-backend/modules"
