@@ -30,7 +30,7 @@ func init() {
 			return
 		}
 
-		key, err := OpenaiProxyKeysService.RondomGetKey()
+		key, err := OpenaiProxyKeysService.RondomGetKey(ctx)
 		if err != nil {
 			r.Response.WriteJson(g.Map{
 				"code":    1001,
@@ -52,7 +52,7 @@ func init() {
 					g.Log().Errorf(ctx, "Current Key is %s,  OpenAI API error: %s", token, resp.Status)
 					// 设置requestKey失效 requestKey为token 去掉Bearer 后面的
 					requestKey := token[7:]
-					OpenaiProxyKeysService.SetKeyInvalid(requestKey)
+					OpenaiProxyKeysService.SetKeyInvalid(ctx, requestKey)
 					return errors.New("OpenAI API error")
 				}
 				return nil

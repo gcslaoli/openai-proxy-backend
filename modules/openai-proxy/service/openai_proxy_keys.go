@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cool-team-official/cool-admin-go/cool"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -92,15 +93,21 @@ func (s *OpenaiProxyKeysService) CheckKey(ctx g.Ctx, key string) (err error) {
 }
 
 // RondomGetKey 从数据库中随机获取一个status=1的key
-func (s *OpenaiProxyKeysService) RondomGetKey() (string, error) {
+func (s *OpenaiProxyKeysService) RondomGetKey(ctx g.Ctx) (string, error) {
 	m := cool.DBM(s.Model)
-	record, err := m.Where("status", 1).OrderRandom().One()
+	result, err := m.Ctx(ctx).Cache(gdb.CacheOption{
+		Duration: 24 * time.Hour,
+		Name:     "keylists",
+		Force:    false,
+	}).Where("status", 1).All()
 	if err != nil {
 		return "", err
 	}
-	if record == nil {
+	if result.Len() == 0 {
 		return "", gerror.New("没有可用的key")
 	}
+	// 随机获取一个key
+	record := result[gconv.Int(gconv.String(time.Now().UnixNano())[:len(gconv.String(time.Now().UnixNano()))-9])%result.Len()]
 	return record["key"].String(), nil
 }
 
@@ -116,14 +123,17 @@ func (s *OpenaiProxyKeysService) ModifyAfter(ctx g.Ctx, method string, param map
 		g.Log().Infof(ctx, "添加后")
 		s.CheckKey(ctx, param["key"].(string))
 	}
+	g.DB().GetCache().Remove(ctx, "keylists")
 	return
 }
 
 // SetKeyInvalid 设置key失效
-func (s *OpenaiProxyKeysService) SetKeyInvalid(key string) (err error) {
+func (s *OpenaiProxyKeysService) SetKeyInvalid(ctx g.Ctx, key string) (err error) {
 	m := cool.DBM(s.Model)
 	_, err = m.Data(g.Map{
 		"status": 0,
 	}).Where("key", key).Update()
+	g.DB().GetCache().Remove(ctx, "keylists")
+
 	return
 }
