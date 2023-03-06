@@ -118,3 +118,12 @@ func (s *OpenaiProxyKeysService) ModifyAfter(ctx g.Ctx, method string, param map
 	}
 	return
 }
+
+// SetKeyInvalid 设置key失效
+func (s *OpenaiProxyKeysService) SetKeyInvalid(key string) (err error) {
+	m := cool.DBM(s.Model)
+	_, err = m.Data(g.Map{
+		"status": 0,
+	}).Where("key", key).Update()
+	return
+}

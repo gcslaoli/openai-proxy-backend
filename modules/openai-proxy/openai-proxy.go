@@ -20,6 +20,16 @@ func init() {
 	OpenaiProxyKeysService := service.NewOpenaiProxyKeysService()
 	s := g.Server()
 	s.BindHandler("/v1/chat/completions", func(r *ghttp.Request) {
+		// 检查用户token
+		token := r.Request.Header.Get("Authorization")
+		if token != "Bearer "+config.Config.Token {
+			r.Response.WriteJson(g.Map{
+				"code":    1001,
+				"message": "Key错误",
+			})
+			return
+		}
+
 		key, err := OpenaiProxyKeysService.RondomGetKey()
 		if err != nil {
 			r.Response.WriteJson(g.Map{
@@ -29,37 +39,26 @@ func init() {
 			return
 		}
 		u, _ := url.Parse(config.Config.OpenAIHost)
-		g.Dump(u)
 		proxy := &httputil.ReverseProxy{Director: func(req *http.Request) {
 			req.URL.Scheme = u.Scheme
 			req.URL.Host = u.Host
+			req.Host = u.Host
+			req.Header.Set("Authorization", "Bearer "+key)
 		},
 			ModifyResponse: func(resp *http.Response) error {
 				if resp.StatusCode != http.StatusOK {
 					token := resp.Request.Header.Get("Authorization")
 					g.Dump(token)
 					g.Log().Errorf(ctx, "Current Key is %s,  OpenAI API error: %s", token, resp.Status)
+					// 设置requestKey失效 requestKey为token 去掉Bearer 后面的
+					requestKey := token[7:]
+					OpenaiProxyKeysService.SetKeyInvalid(requestKey)
 					return errors.New("OpenAI API error")
 				}
 				return nil
 			},
 		}
-		// proxy:= &httputil.ReverseProxy{}
-		// 获取 request 的 Authorization 中的 token
-		token := r.Request.Header.Get("Authorization")
-		g.Dump(token)
-		g.Dump(config.Config.Token)
-		if token != "Bearer "+config.Config.Token {
-			r.Response.WriteJson(g.Map{
-				"code":    1001,
-				"message": "Key错误",
-			})
-			return
-		}
-		newreq := r.Request.Clone(r.Context())
-		newreq.Header.Set("Authorization", "Bearer "+key)
-		newreq.Host = u.Host
-		g.Dump(newreq.Header)
-		proxy.ServeHTTP(r.Response.Writer, newreq)
+
+		proxy.ServeHTTP(r.Response.Writer, r.Request)
 	})
 }
