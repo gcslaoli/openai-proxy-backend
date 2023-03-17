@@ -67,6 +67,26 @@ func ModerationsProxy(r *ghttp.Request) {
 	g.DumpWithType(r.Header)
 	g.DumpWithType(r.Request.Cookies())
 	g.DumpWithType(r.GetMap())
-	// u, _ := url.Parse(config.Config.ChatHost)
 
+	u, _ := url.Parse(config.Config.ChatHost)
+	proxy := &httputil.ReverseProxy{Director: func(req *http.Request) {
+		req.URL.Scheme = u.Scheme
+		req.URL.Host = u.Host
+		req.Host = u.Host
+		req.Header.Set("Accept", "*/*")
+		req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+		req.Header.Set("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
+		req.Header.Set("Connection", "keep-alive")
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Host", "chat.openai.com")
+		req.Header.Set("Referer", "https://chat.openai.com/chat")
+		req.Header.Set("Sec-Fetch-Dest", "empty")
+		req.Header.Set("Sec-Fetch-Mode", "cors")
+		req.Header.Set("Sec-Fetch-Site", "same-origin")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/111.0")
+		g.Log().Debug(ctx, "req.Header............................")
+		g.Dump(req.Header)
+	},
+	}
+	proxy.ServeHTTP(r.Response.Writer, r.Request)
 }
