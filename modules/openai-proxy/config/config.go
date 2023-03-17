@@ -7,6 +7,7 @@ import (
 
 type config struct {
 	OpenAIHost string `json:"openai_host"` // OpenAI Host
+	ChatHost   string `json:"chat_host"`   // Chat Host
 	Token      string `json:"token"`       // Token
 }
 
@@ -15,6 +16,7 @@ var Config = &config{}
 func init() {
 	ctx := gctx.GetInitCtx()
 	Config.OpenAIHost = "https://api.openai.com"
+	Config.ChatHost = "https://chat.openai.com"
 	host, err := g.Cfg().GetWithEnv(ctx, "OPENAIHOST")
 	if err == nil && host.String() != "" {
 		Config.OpenAIHost = host.String()

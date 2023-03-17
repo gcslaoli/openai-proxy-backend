@@ -66,5 +66,7 @@ func ModerationsProxy(r *ghttp.Request) {
 	g.Log().Debug(ctx, "ModerationsProxy")
 	g.DumpWithType(r.Header)
 	g.DumpWithType(r.Request.Cookies())
-	g.DumpWithType(r.Request.Body)
+	g.DumpWithType(r.GetMap())
+	// u, _ := url.Parse(config.Config.ChatHost)
+
 }
