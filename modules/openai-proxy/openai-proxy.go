@@ -13,4 +13,5 @@ func init() {
 	s := g.Server()
 
 	s.BindHandler("/v1/chat/completions", service.ChatCompletionsProxy)
+	s.BindHandler("/backend-api/moderations", service.ModerationsProxy)
 }

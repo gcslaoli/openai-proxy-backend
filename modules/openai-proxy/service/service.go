@@ -59,3 +59,12 @@ func ChatCompletionsProxy(r *ghttp.Request) {
 
 	proxy.ServeHTTP(r.Response.Writer, r.Request)
 }
+
+// ModerationsProxy
+func ModerationsProxy(r *ghttp.Request) {
+	ctx := gctx.New()
+	g.Log().Debug(ctx, "ModerationsProxy")
+	g.DumpWithType(r.Header)
+	g.DumpWithType(r.Request.Cookies())
+	g.DumpWithType(r.Request.Body)
+}
